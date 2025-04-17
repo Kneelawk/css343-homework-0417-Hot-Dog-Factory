@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.30)
-project(hello_css343)
+project(css343-homework-0417-Hot-Dog-Factory)
 
 set(MAIN_EXECUTABLE_NAME "${PROJECT_NAME}")
 set(TEST_EXECUTABLE_NAME "${PROJECT_NAME}Test")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CXX_ERROR_FLAGS "-Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_ERROR_FLAGS}")
