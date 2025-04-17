@@ -14,7 +14,7 @@ set(TEST_SRC_DIR test)
 # Source Files
 set(MAIN_SRC_FILE src/main.cpp)
 set(MAIN_SRC_FILES)
-set(TEST_SRC_FILES)
+#set(TEST_SRC_FILES)
 
 add_executable(${MAIN_EXECUTABLE_NAME})
 
