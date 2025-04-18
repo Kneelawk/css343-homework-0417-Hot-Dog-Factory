@@ -7,13 +7,11 @@
 // #include "functors.h" // TODO
 
 KTEST(test) {
-    std::cout << "doing test.\n";
     const bool myTrue = true;
     KASSERT_TRUE(myTrue);
 }
 
 KTEST(test2) {
-    std::cout << "doing other test.\n";
     KASSERT_EQ(5, 2 + 3) << "Something is very wrong with math";
 }
 
