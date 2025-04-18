@@ -148,7 +148,8 @@ namespace ktest {
         const char *exitEnv = std::getenv("KTEST_EXIT");
         const bool shouldExit = exitEnv != nullptr && !std::strcmp(exitEnv, "1");
 
-        bool errorEncountered = false;
+        size_t failedTests = 0;
+        size_t passedTests = 0;
         for (const auto &test: tests) {
             std::cout << "Running test: \033[1;36m" << test.name() << "\033[0m" << std::endl;
             if (shouldFork) {
@@ -172,32 +173,47 @@ namespace ktest {
                     if (WIFEXITED(status)) {
                         const int statusRet = WEXITSTATUS(status);
                         if (!statusRet) {
-                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m." << std::endl;
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32mpassed\033[0m." <<
+                                    std::endl;
+                            ++passedTests;
                         } else {
-                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m." << std::endl;
-                            errorEncountered = true;
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m." <<
+                                    std::endl;
+                            ++failedTests;
                         }
                     } else if (WIFSIGNALED(status)) {
                         const int signal = WSTOPSIG(status);
                         std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Signal: " <<
                                 strsignal(signal) << std::endl;
-                        errorEncountered = true;
+                        ++failedTests;
                     }
                 }
             } else {
                 try {
                     test();
-                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m." << std::endl;
+                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32mpassed\033[0m." << std::endl;
+                    ++passedTests;
                 } catch (const KAssertionError &) {
                     std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m." << std::endl;
-                    errorEncountered = true;
+                    ++failedTests;
                 }
             }
         }
 
-        if (shouldExit && errorEncountered) {
+        std::cout << "\033[1m## TEST RESULTS ##\033[0m" << std::endl;
+        std::cout << "  Tests passed: " << passedTests << std::endl;
+        std::cout << "  Tests failed: " << failedTests << std::endl;
+
+        if (failedTests) {
+            std::cout << "\033[1;31m## TESTS FAILED ##\033[0m" << std::endl;
+        }
+
+        if (shouldExit && failedTests) {
+            std::cout << "Exiting..." << std::endl;
             exit(-1);
         }
+
+        std::cout << std::endl;
     }
 }
 
