@@ -6,6 +6,8 @@
  * ktest.hpp
  *
  * Kneelawk's simple testing framework. Because my teacher told me not to use external testing frameworks.
+ *
+ * Portions of this testing framework were inspired by GoogleTest.
  */
 
 #ifndef KTEST_HPP
