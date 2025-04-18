@@ -17,6 +17,11 @@ jobs:
         run: cmake -GNinja -S . -B build
       - name: Build
         run: ninja -C build
+      - name: Run Program
+        run: build/${{ env.PROJECT_NAME }}
+        env:
+          KTEST_FORK: 1
+          KTEST_EXIT: 1
 #      - name: Run Tests
 #        run: ctest
 #        working-directory: build
