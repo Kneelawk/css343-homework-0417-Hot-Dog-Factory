@@ -7,16 +7,18 @@
 // #include "functors.h" // TODO
 
 KTEST(test) {
+    std::cout << "doing test." << std::endl;
     const bool myTrue = true;
     KASSERT_TRUE(myTrue);
 }
 
 KTEST(test2) {
+    std::cout << "doing other test." << std::endl;
     KASSERT_EQ(5, 2 + 3) << "Something is very wrong with math";
 }
 
 void makeHotDogs() {
-    Rng rng(21324); 
+    Rng rng(21324);
 
     // Heap<Foodstuff, Cheapest> h;
     // std::vector<Foodstuff> ingredients;
@@ -42,7 +44,7 @@ void makeHotDogs() {
 
 
 int main() {
-    std::cout << "Test\n";
+    std::cout << "Test" << std::endl;
     ktest::runAllTests();
     makeHotDogs();
     return 0;

@@ -61,10 +61,10 @@ namespace ktest {
 
         KAssertionHelper &operator=(const std::stringstream &str) const {
             // we use the '=' operator because that takes the lowest precedence while still being an infix operator.
-            std::cout << filepath << ":" << line << ": Assertion Failure\n";
-            std::cout << msg << '\n';
+            std::cout << filepath << ":" << line << ": Assertion Failure" << std::endl;
+            std::cout << msg << std::endl;
             if (str.rdbuf()->in_avail())
-                std::cout << "    " << str.str() << '\n';
+                std::cout << "    " << str.str() << std::endl;
             throw KAssertionError();
         }
     };
@@ -150,7 +150,7 @@ namespace ktest {
 
         bool errorEncountered = false;
         for (const auto &test: tests) {
-            std::cout << "Running test: \033[1;36m" << test.name() << "\033[0m\n";
+            std::cout << "Running test: \033[1;36m" << test.name() << "\033[0m" << std::endl;
             if (shouldFork) {
                 const pid_t child = fork();
                 if (child == 0) {
@@ -163,7 +163,7 @@ namespace ktest {
                     exit(0);
                 }
                 if (child == -1) {
-                    std::cerr << "Error starting test " << test.name() << ": " << std::strerror(errno) << '\n';
+                    std::cerr << "Error starting test " << test.name() << ": " << std::strerror(errno) << std::endl;
                 } else {
                     // we're the parent process
                     int status;
@@ -172,24 +172,24 @@ namespace ktest {
                     if (WIFEXITED(status)) {
                         const int statusRet = WEXITSTATUS(status);
                         if (!statusRet) {
-                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m." << std::endl;
                         } else {
-                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m." << std::endl;
                             errorEncountered = true;
                         }
                     } else if (WIFSIGNALED(status)) {
                         const int signal = WSTOPSIG(status);
                         std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Signal: " <<
-                                strsignal(signal) << '\n';
+                                strsignal(signal) << std::endl;
                         errorEncountered = true;
                     }
                 }
             } else {
                 try {
                     test();
-                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
+                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m." << std::endl;
                 } catch (const KAssertionError &) {
-                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
+                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m." << std::endl;
                     errorEncountered = true;
                 }
             }
