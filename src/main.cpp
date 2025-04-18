@@ -42,6 +42,7 @@ void makeHotDogs() {
 
 
 int main() {
+    std::cout << "Test\n";
     ktest::runAllTests();
     makeHotDogs();
     return 0;
