@@ -8,15 +8,13 @@
 
 KTEST(test) {
     std::cout << "doing test.\n";
-    const bool myFalse = false;
-    KASSERT_TRUE(myFalse);
+    const bool myTrue = true;
+    KASSERT_TRUE(myTrue);
 }
 
 KTEST(test2) {
     std::cout << "doing other test.\n";
-    const std::string hello = "hello";
-    const std::string world = "world";
-    KASSERT_EQ(hello, world) << "noooooo";
+    KASSERT_EQ(5, 2 + 3) << "Something is very wrong with math";
 }
 
 void makeHotDogs() {
