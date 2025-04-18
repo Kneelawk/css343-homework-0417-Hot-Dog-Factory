@@ -8,11 +8,15 @@
 
 KTEST(test) {
     std::cout << "doing test.\n";
+    const bool myFalse = false;
+    KASSERT_TRUE(myFalse);
 }
 
 KTEST(test2) {
     std::cout << "doing other test.\n";
-    throw std::runtime_error("runtime error.");
+    const std::string hello = "hello";
+    const std::string world = "world";
+    KASSERT_EQ(hello, world) << "noooooo";
 }
 
 void makeHotDogs() {

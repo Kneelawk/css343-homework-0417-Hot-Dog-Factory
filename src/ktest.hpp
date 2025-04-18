@@ -1,21 +1,88 @@
+// Copywrite (c) 2025 Cyan Kneelawk
 //
-// Created by cyan on 4/17/25.
-//
+// MIT Licensed
+
+/*
+ * ktest.hpp
+ *
+ * Kneelawk's simple testing framework. Because my teacher told me not to use external testing frameworks.
+ */
 
 #ifndef KTEST_HPP
 #define KTEST_HPP
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <functional>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include <csignal>
 #include <sys/wait.h>
-#include <cstdlib>
 
 namespace ktest {
+    class KAssertionError final : public std::exception {
+    public:
+        KAssertionError() = default;
+    };
+
+    class KAssertionResult final {
+        std::string msg_;
+        bool success_;
+
+    public:
+        KAssertionResult(const std::string &msg, const bool success)
+            : msg_(msg),
+              success_(success) {
+        }
+
+        explicit operator bool() const {
+            return success_;
+        }
+
+        std::string msg() const {
+            return msg_;
+        }
+    };
+
+    class KAssertionHelper final {
+        std::string msg;
+        std::string filepath;
+        size_t line;
+
+    public:
+        KAssertionHelper(const std::string &msg, const std::string &filepath, const size_t line)
+            : msg(msg),
+              filepath(filepath),
+              line(line) {
+        }
+
+        KAssertionHelper &operator=(const std::stringstream &str) const {
+            // we use the '=' operator because that takes the lowest precedence while still being an infix operator.
+            std::cout << filepath << ":" << line << ": Assertion Failure\n";
+            std::cout << msg << '\n';
+            if (str.rdbuf()->in_avail())
+                std::cout << "    " << str.str() << '\n';
+            throw KAssertionError();
+        }
+    };
+
+    inline KAssertionResult assert_true(const std::string &checkStr, bool checkRes) {
+        return {
+            (std::stringstream() << "ASSERT_TRUE - Expected the following to be true:\n  '" << checkStr << "': " <<
+             checkRes).str(),
+            checkRes
+        };
+    }
+
+#define KASSERT_TRUE(check) \
+    if (const ::ktest::KAssertionResult res = ::ktest::assert_true(#check, (check))); \
+    else ::ktest::KAssertionHelper(res.msg(), __FILE__, __LINE__) = ::std::stringstream()
+
+#define KASSERT_EQ(expected, actual) \
+    if (const ::ktest::KAssertionResult res = ::ktest::KAssertionResult((::std::stringstream() << "ASSERT_EQ - Expected the following to be equal:\n  '" << #expected << "': " << (expected) << "\n  '" << #actual << "': " << (actual)).str(), (expected) == (actual))); \
+    else ::ktest::KAssertionHelper(res.msg(), __FILE__, __LINE__) = std::stringstream()
+
     class KTestTest;
 
     static std::vector<KTestTest> tests;
@@ -65,9 +132,9 @@ namespace ktest {
 
 #define KTEST(name) \
     void __ktest_fn_##name(); \
-    class __KTest_##name : public ktest::KTestTest { \
+    class __KTest_##name : public ::ktest::KTestTest { \
     public: \
-        __KTest_##name() : ktest::KTestTest(#name, __ktest_fn_##name) { \
+        __KTest_##name() : ::ktest::KTestTest(#name, __ktest_fn_##name) { \
         } \
     }; \
     static __KTest_##name __ktest_##name; \
@@ -82,8 +149,12 @@ namespace ktest {
                 const pid_t child = fork();
                 if (child == 0) {
                     // we're the child process
-                    test();
-                    exit(0);
+                    try {
+                        test();
+                        exit(0);
+                    } catch (const KAssertionError &) {
+                        exit(-1);
+                    }
                 }
                 if (child == -1) {
                     std::cerr << "Error starting test " << test.name() << ": " << std::strerror(errno) << '\n';
@@ -92,19 +163,25 @@ namespace ktest {
                     int status;
                     waitpid(child, &status, 0);
 
-                    if (WIFSIGNALED(status)) {
+                    if (WIFEXITED(status)) {
+                        const int statusRet = WEXITSTATUS(status);
+                        if (!statusRet) {
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
+                        } else {
+                            std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
+                        }
+                    } else if (WIFSIGNALED(status)) {
                         const int signal = WSTOPSIG(status);
-                        std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Signal: " << strsignal(signal) << '\n';
-                    } else {
-                        std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
+                        std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Signal: " <<
+                                strsignal(signal) << '\n';
                     }
                 }
             } else {
                 try {
                     test();
                     std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
-                } catch (const std::exception &err) {
-                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Error: " << err.what() << '\n';
+                } catch (const KAssertionError &) {
+                    std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
                 }
             }
         }
