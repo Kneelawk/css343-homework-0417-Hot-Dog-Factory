@@ -143,6 +143,10 @@ namespace ktest {
     inline void runAllTests() {
         const char *forkEnv = std::getenv("KTEST_FORK");
         const bool shouldFork = forkEnv != nullptr && !std::strcmp(forkEnv, "1");
+        const char *exitEnv = std::getenv("KTEST_EXIT");
+        const bool shouldExit = exitEnv != nullptr && !std::strcmp(exitEnv, "1");
+
+        bool errorEncountered = false;
         for (const auto &test: tests) {
             std::cout << "Running test: \033[1;36m" << test.name() << "\033[0m\n";
             if (shouldFork) {
@@ -169,11 +173,13 @@ namespace ktest {
                             std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
                         } else {
                             std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
+                            errorEncountered = true;
                         }
                     } else if (WIFSIGNALED(status)) {
                         const int signal = WSTOPSIG(status);
                         std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m. Signal: " <<
                                 strsignal(signal) << '\n';
+                        errorEncountered = true;
                     }
                 }
             } else {
@@ -182,8 +188,13 @@ namespace ktest {
                     std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;32msucceeded\033[0m.\n";
                 } catch (const KAssertionError &) {
                     std::cout << "Test \033[1;36m" << test.name() << "\033[0m \033[1;31mfailed\033[0m.\n";
+                    errorEncountered = true;
                 }
             }
+        }
+
+        if (shouldExit && errorEncountered) {
+            exit(-1);
         }
     }
 }
