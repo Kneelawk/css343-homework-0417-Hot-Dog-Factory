@@ -155,10 +155,10 @@ namespace ktest {
                     // we're the child process
                     try {
                         test();
-                        exit(0);
                     } catch (const KAssertionError &) {
                         exit(-1);
                     }
+                    exit(0);
                 }
                 if (child == -1) {
                     std::cerr << "Error starting test " << test.name() << ": " << std::strerror(errno) << '\n';
