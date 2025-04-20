@@ -17,6 +17,15 @@ KTEST(test2) {
     KASSERT_EQ(5, 2 + 3) << "Something is very wrong with math";
 }
 
+KTEST(test3) {
+    int i = 0;
+    KASSERT_THROWS(std::runtime_error, [&], {
+        i = 2;
+        throw std::runtime_error("UwU");
+    }) << "here goes nothing!";
+    std::cout << "i: " << i << std::endl;
+}
+
 void makeHotDogs() {
     Rng rng(21324);
 
