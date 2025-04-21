@@ -5,6 +5,14 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+template<typename T>
+class SimpleHeapComparator {
+public:
+    bool operator()(const T &a, const T &b) const {
+        return a < b;
+    }
+};
+
 // Absolutely no STL usage!
 template<typename T, typename C>
 class Heap final {
